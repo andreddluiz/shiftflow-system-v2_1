@@ -1,0 +1,1 @@
+export { golTheme } from './theme';
