@@ -1,9 +1,9 @@
-import React, { useEffect } from 'react';
+import React, { useEffect, useState } from 'react';
 import { BrowserRouter, Routes, Route, Navigate } from 'react-router-dom';
 import { ThemeProvider, CssBaseline, Box, Toolbar, CircularProgress } from '@mui/material';
 import { onAuthStateChanged } from 'firebase/auth';
 import { auth } from './services/firebase';
-import { useStore } from './store/useStore';
+import { useStore, UserRole, UserStatus } from './store/useStore';
 import { golTheme } from './theme/theme';
 
 import LoginPage from './pages/LoginPage';
@@ -27,20 +27,28 @@ const MainLayout: React.FC<{ children: React.ReactNode }> = ({ children }) => {
   );
 };
 
-const PrivateRoute: React.FC<{ children: React.ReactNode }> = ({ children }) => {
-  const { isAuthenticated, loading } = useStore();
+interface PrivateRouteProps {
+  children: React.ReactNode;
+  isAuthenticated: boolean;
+  loading: boolean;
+}
 
-  if (loading) return (
-    <Box sx={{ height: '100vh', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
-      <CircularProgress />
-    </Box>
-  );
+const PrivateRoute: React.FC<PrivateRouteProps> = ({ children, isAuthenticated, loading }) => {
+  if (loading) {
+    return (
+      <Box sx={{ height: '100vh', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+        <CircularProgress />
+      </Box>
+    );
+  }
 
   return isAuthenticated ? <MainLayout>{children}</MainLayout> : <Navigate to="/login" replace />;
 };
 
 const App: React.FC = () => {
-  const { setUser, loading } = useStore();
+  const { user, setUser, clearUser, isAuthenticated } = useStore();
+  const [loading, setLoading] = useState(true);
+  const [authLoading, setAuthLoading] = useState(true);
 
   useEffect(() => {
     const unsubscribe = onAuthStateChanged(auth, (firebaseUser) => {
@@ -48,18 +56,26 @@ const App: React.FC = () => {
         setUser({
           uid: firebaseUser.uid,
           email: firebaseUser.email || '',
-          displayName: firebaseUser.displayName || 'Usuário GOL',
-          username: 'tripulante01',
-          role: 'admin',
+          displayName: firebaseUser.displayName || firebaseUser.email?.split('@')[0] || 'Usuário GOL',
+          username: firebaseUser.email?.split('@')[0] || 'usuario',
+          role: UserRole.ADMIN,
           base: 'GRU-SP',
-          status: 'ATIVO'
+          status: UserStatus.ATIVO
         });
       } else {
-        setUser(null);
+        clearUser();
       }
+      setAuthLoading(false);
     });
+
     return () => unsubscribe();
-  }, [setUser]);
+  }, [setUser, clearUser]);
+
+  useEffect(() => {
+    if (!authLoading) {
+      setLoading(false);
+    }
+  }, [authLoading]);
 
   if (loading) {
     return (
@@ -78,7 +94,17 @@ const App: React.FC = () => {
       <BrowserRouter>
         <Routes>
           <Route path="/login" element={<LoginPage />} />
-          <Route path="/dashboard" element={<PrivateRoute><DashboardPage /></PrivateRoute>} />
+          <Route 
+            path="/dashboard" 
+            element={
+              <PrivateRoute 
+                isAuthenticated={isAuthenticated} 
+                loading={authLoading}
+              >
+                <DashboardPage />
+              </PrivateRoute>
+            } 
+          />
           <Route path="/" element={<Navigate to="/login" replace />} />
           <Route path="*" element={<Navigate to="/login" replace />} />
         </Routes>

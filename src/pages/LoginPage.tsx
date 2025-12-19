@@ -12,10 +12,10 @@ import {
 import { useNavigate } from 'react-router-dom';
 import { signInWithEmailAndPassword } from 'firebase/auth';
 import { auth } from '../services/firebase';
-import { useStore } from '../store/useStore';
+import { useStore, UserRole, UserStatus } from '../store/useStore';
 
 const LoginPage: React.FC = () => {
-  const [username, setUsername] = useState('');
+  const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState('');
@@ -28,23 +28,22 @@ const LoginPage: React.FC = () => {
     setError('');
 
     try {
-      // Usar email como username para Firebase
-      const email = `${username}@gol.com.br`;
+      // Usar email diretamente do input (suporta Gmail, GOL e outros domínios)
       const userCredential = await signInWithEmailAndPassword(auth, email, password);
       
       setUser({
         uid: userCredential.user.uid,
         email: userCredential.user.email || '',
-        displayName: username,
-        username: username,
-        role: 'admin',
+        displayName: userCredential.user.email?.split('@')[0] || 'Usuário',
+        username: userCredential.user.email?.split('@')[0] || 'usuario',
+        role: UserRole.ADMIN,
         base: 'GRU-SP',
-        status: 'ATIVO'
+        status: UserStatus.ATIVO
       });
 
       navigate('/dashboard');
     } catch (err: any) {
-      setError('Usuário ou senha inválidos');
+      setError('Email ou senha inválidos');
       console.error('Login error:', err);
     } finally {
       setLoading(false);
@@ -117,16 +116,17 @@ const LoginPage: React.FC = () => {
 
           {/* Formulário de Login */}
           <form onSubmit={handleLogin}>
-            {/* Campo Usuário */}
+            {/* Campo Email */}
             <TextField
               fullWidth
-              label="Usuário / RE"
-              type="text"
-              value={username}
-              onChange={(e) => setUsername(e.target.value)}
+              label="Email"
+              type="email"
+              value={email}
+              onChange={(e) => setEmail(e.target.value)}
               margin="normal"
               variant="outlined"
               disabled={loading}
+              required
               sx={{
                 '& .MuiOutlinedInput-root': {
                   '&:hover fieldset': {
@@ -141,7 +141,7 @@ const LoginPage: React.FC = () => {
                   opacity: 1,
                 },
               }}
-              placeholder="Insira seu usuário"
+              placeholder="seu-email@gmail.com ou seu-email@gol.com.br"
             />
 
             {/* Campo Senha */}
@@ -154,6 +154,7 @@ const LoginPage: React.FC = () => {
               margin="normal"
               variant="outlined"
               disabled={loading}
+              required
               sx={{
                 '& .MuiOutlinedInput-root': {
                   '&:hover fieldset': {

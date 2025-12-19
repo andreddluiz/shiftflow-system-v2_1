@@ -1,20 +1,25 @@
-
 import { initializeApp } from 'firebase/app';
 import { getAuth } from 'firebase/auth';
 import { getFirestore } from 'firebase/firestore';
 
-// Note: In a production environment, these values would come from environment variables.
-// The placeholders below must be updated with actual project credentials in the .env file.
+// Your web app's Firebase configuration
 const firebaseConfig = {
-  apiKey: "AIzaSy_MOCK_API_KEY",
-  authDomain: "shiftflow-gol.firebaseapp.com",
-  projectId: "shiftflow-gol",
-  storageBucket: "shiftflow-gol.appspot.com",
-  messagingSenderId: "123456789",
-  appId: "1:123456789:web:abcdef123456"
+  apiKey: "AIzaSyD1KwobxvH8wsLqmJPJCFeu6lOqPcKXNT8",
+  authDomain: "shiftflow-85430.firebaseapp.com",
+  projectId: "shiftflow-85430",
+  storageBucket: "shiftflow-85430.firebasestorage.app",
+  messagingSenderId: "184977137930",
+  appId: "1:184977137930:web:7901fe04cd4ac7a9315af3",
+  measurementId: "G-VECKP38FFF"
 };
 
+// Initialize Firebase
 const app = initializeApp(firebaseConfig);
+
+// Initialize Auth
 export const auth = getAuth(app);
+
+// Initialize Firestore
 export const db = getFirestore(app);
-export default app;
+
+console.log('Firebase initialized with project:', firebaseConfig.projectId);
