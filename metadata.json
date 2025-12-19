@@ -1,0 +1,8 @@
+{
+  "name": "ShiftFlow System - GOL Airlines",
+  "description": "A comprehensive shift management and operation flow system for GOL Airlines, featuring Firebase authentication, real-time Firestore synchronization, and a custom GOL-branded UI using Tailwind CSS.",
+  "requestFramePermissions": [
+    "camera",
+    "microphone"
+  ]
+}
